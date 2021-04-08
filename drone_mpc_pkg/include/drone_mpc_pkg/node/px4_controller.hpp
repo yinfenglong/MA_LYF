@@ -4,15 +4,15 @@
  * @Author: Wei Luo
  * @Date: 2021-03-14 23:40:44
  * @LastEditors: Wei Luo
- * @LastEditTime: 2021-04-06 15:53:41
+ * @LastEditTime: 2021-04-08 23:28:12
  * @Note: Note
  */
 # include <ros/ros.h>
 // server msg
-#include <itm_nonlinear_mpc/SetMode.h>
-#include <itm_nonlinear_mpc/GetControllerState.h>
+#include <drone_mpc_pkg/SetMode.h>
+#include <drone_mpc_pkg/GetControllerState.h>
 // topic msg
-#include <itm_nonlinear_mpc/SetMission.h>
+#include <drone_mpc_pkg/SetMission.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <nav_msgs/Odometry.h>
 #include <mavros_msgs/CommandBool.h>
@@ -22,20 +22,20 @@
 #include <mavros_msgs/PositionTarget.h>
 
 // controller
-#include <itm_nonlinear_mpc/controller/pid/PID_controller.hpp>
+#include <drone_mpc_pkg/controller/pid/PID_controller.hpp>
 // #include <itm_nonlinear_mpc/experiment/command_to_px4.hpp>
 
 mavros_msgs::State mavros_state;
-itm_nonlinear_mpc::SetMode uav_mode;
-itm_nonlinear_mpc::GetControllerState controller_state;
+drone_mpc_pkg::SetMode uav_mode;
+drone_mpc_pkg::GetControllerState controller_state;
 // bool controller_state;
 
 bool current_pos_flag = false;
 int controller_type;
 geometry_msgs::PoseStamped current_pos;
 geometry_msgs::PoseStamped initial_pos;
-itm_nonlinear_mpc::SetMission user_command;
-itm_nonlinear_mpc::SetMission last_user_command;
+drone_mpc_pkg::SetMission user_command;
+drone_mpc_pkg::SetMission last_user_command;
 
 mavros_msgs::SetMode offboard_set_mode;
 mavros_msgs::CommandBool arm_cmd;
@@ -111,7 +111,7 @@ void current_odom_callback(const nav_msgs::Odometry::ConstPtr& msg)
     current_pos.pose.orientation.w = msg->pose.pose.orientation.w;
 }
 
-void user_command_callback(const itm_nonlinear_mpc::SetMission::ConstPtr& msg)
+void user_command_callback(const drone_mpc_pkg::SetMission::ConstPtr& msg)
 {
     user_command.mission_mode = msg->mission_mode;
     user_command.command_idx += 1;

@@ -2,7 +2,9 @@ cmake_minimum_required(VERSION 3.0.2)
 project(drone_mpc_pkg)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-# add_compile_options(-std=c++11)
+add_compile_options(-std=c++11)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -DEXT_DEP -fdiagnostics-show-option")
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -23,7 +25,31 @@ find_package(catkin REQUIRED COMPONENTS
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/")
 
+find_package(LAPACK REQUIRED)
+set(lapacke_LIBRARIES lapacke)
+
+find_package(PkgConfig)
+pkg_search_module(Eigen3 REQUIRED eigen3)
+include_directories(${Eigen3_INCLUDE_DIRS})
+
+## System dependencies are found with CMake's conventions
+find_package(Boost REQUIRED COMPONENTS system)
+
+
+## for ACADOS
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -DEXT_DEP -fdiagnostics-show-option")
+# include some more paths
+include_directories($ENV{ACADOS_SOURCE_DIR}/include)
+include_directories($ENV{ACADOS_SOURCE_DIR}/include/blasfeo/include)
+include_directories($ENV{ACADOS_SOURCE_DIR}/include/hpipm/include)
+include_directories($ENV{ACADOS_SOURCE_DIR}/include/acados)
+include_directories(solver_acados)
+
+# load acados libs
+link_directories($ENV{ACADOS_SOURCE_DIR}/lib)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -55,18 +81,22 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
+add_message_files(
+  FILES
+  mpc_command_rpyt.msg
+  itm_trajectory_point.msg
+  itm_trajectory_msg.msg
+  SetMission.msg
+)
 
 ## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
+add_service_files(
+  FILES
+  mpc_set_point_pos.srv
+  GetControllerState.srv
+  itm_trajectory_srv.srv
+  SetMode.srv
+)
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -76,10 +106,12 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   geometry_msgs#   mav_msgs#   mavros_msgs#   nav_msgs#   sensor_msgs#   std_msgs
-# )
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+  mav_msgs
+  # geometry_msgs#   mav_msgs#   mavros_msgs#   nav_msgs#   sensor_msgs#   std_msgs
+)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -111,8 +143,9 @@ find_package(catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES drone_mpc_pkg
+ INCLUDE_DIRS include
+ LIBRARIES drone_mpc_pkg
+ CATKIN_DEPENDS mav_msgs roscpp rospy std_msgs message_runtime
 #  CATKIN_DEPENDS dynamic_reconfigure geometry_msgs mav_msgs mavros_msgs message_generation nav_msgs roscpp rospy sensor_msgs std_msgs tf
 #  DEPENDS system_lib
 )
@@ -124,8 +157,59 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
+  include
   ${catkin_INCLUDE_DIRS}
+  # acados
+  solver_acados/
+)
+
+# include some more paths
+include_directories($ENV{ACADOS_SOURCE_DIR}/include)
+include_directories($ENV{ACADOS_SOURCE_DIR}/include/blasfeo/include)
+include_directories($ENV{ACADOS_SOURCE_DIR}/include/hpipm/include)
+include_directories($ENV{ACADOS_SOURCE_DIR}/include/acados)
+
+# load acados libs
+link_directories($ENV{ACADOS_SOURCE_DIR}/lib)
+
+add_executable(pid_controller
+  src/controller/pid/PID_controller.cpp
+)
+target_link_libraries(pid_controller
+  ${catkin_LIBRARIES}
+)
+
+file(GLOB ocp_solver
+        solver_acados/acados_solver_quadrotor_q.c
+)
+
+file(GLOB casadi_fun
+        solver_acados/quadrotor_q_model/quadrotor_q_expl_ode_fun.c
+        solver_acados/quadrotor_q_model/quadrotor_q_expl_vde_forw.c
+)
+
+file(GLOB sim_solver
+        .solver_acados/acados_sim_solver_quadrotor_q.c
+)
+
+        add_library(ocp_shared_lib SHARED ${ocp_solver} ${casadi_fun} )
+        target_link_libraries(ocp_shared_lib acados hpipm blasfeo)
+
+        add_library(sim_shared_lib SHARED ${sim_solver} ${casadi_fun})
+        target_link_libraries(sim_shared_lib acados hpipm blasfeo)
+
+add_executable(mpc_controller
+  src/controller/mpc_acados/mpc_acados.cpp
+)
+target_link_libraries(mpc_controller
+  ocp_shared_lib
+  sim_shared_lib
+  ${catkin_LIBRARIES}
+)
+
+add_executable(px4_controller src/node/px4_controller.cpp)
+target_link_libraries(px4_controller
+  ${catkin_LIBRARIES}
 )
 
 ## Declare a C++ library

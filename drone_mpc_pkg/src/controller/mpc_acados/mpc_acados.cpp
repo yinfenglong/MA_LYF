@@ -2,10 +2,10 @@
  * @Author: Wei Luo
  * @Date: 2021-04-04 00:12:43
  * @LastEditors: Wei Luo
- * @LastEditTime: 2021-04-07 20:10:01
+ * @LastEditTime: 2021-04-08 23:34:44
  * @Note: Note
  */
-#include <itm_nonlinear_mpc/controller/mpc_acados/mpc_acados.hpp>
+#include <drone_mpc_pkg/controller/mpc_acados/mpc_acados.hpp>
 namespace acados_quadrotor
 {
     MPCAcadosController::MPCAcadosController(const ros::NodeHandle &nh, const ros::NodeHandle &private_nh) :
@@ -18,7 +18,7 @@ namespace acados_quadrotor
     {
         /* subscribe topics */
         robot_pose_sub_ = nh_.subscribe<nav_msgs::Odometry>("/robot_pose", 10, &MPCAcadosController::current_odom_callback, this);
-        trajectory_sub_ = nh_.subscribe<itm_nonlinear_mpc::itm_trajectory_msg>("/robot_trajectory", 10, &MPCAcadosController::trajectory_callback, this);
+        trajectory_sub_ = nh_.subscribe<drone_mpc_pkg::itm_trajectory_msg>("/robot_trajectory", 10, &MPCAcadosController::trajectory_callback, this);
         /* server */
         controller_server_ = nh_.advertiseService("/itm_quadrotor_control/get_controller_state", &MPCAcadosController::controller_server_response_callback, this);
 
@@ -212,13 +212,13 @@ namespace acados_quadrotor
         }
     }
 
-    void MPCAcadosController::trajectory_callback(const itm_nonlinear_mpc::itm_trajectory_msg::ConstPtr &msg)
+    void MPCAcadosController::trajectory_callback(const drone_mpc_pkg::itm_trajectory_msg::ConstPtr &msg)
     {
         if (!is_trajectory_provided_)
             is_trajectory_provided_ = true;
         {
             boost::unique_lock<boost::shared_mutex> lockImageCallback(mutexTrajectoryCallback_);
-            trajectory_ref_point_ = std::make_shared<itm_nonlinear_mpc::itm_trajectory_msg>(*msg);
+            trajectory_ref_point_ = std::make_shared<drone_mpc_pkg::itm_trajectory_msg>(*msg);
         }
     }
 
@@ -248,8 +248,8 @@ namespace acados_quadrotor
         }
     }
 
-    bool MPCAcadosController::controller_server_response_callback(itm_nonlinear_mpc::GetControllerState::Request &req,
-                                                                  itm_nonlinear_mpc::GetControllerState::Response &res)
+    bool MPCAcadosController::controller_server_response_callback(drone_mpc_pkg::GetControllerState::Request &req,
+                                                                  drone_mpc_pkg::GetControllerState::Response &res)
     {
         command_id = req.command_id;
         // robot_name_ = req.robot_name;

@@ -4,13 +4,13 @@
  * @Author: Wei Luo
  * @Date: 2021-03-14 23:23:46
  * @LastEditors: Wei Luo
- * @LastEditTime: 2021-04-06 15:03:17
+ * @LastEditTime: 2021-04-08 23:29:23
  * @Note: To control an experiment quadrotor with different
  *      controllers.
  */
 
 // include header files
-#include <itm_nonlinear_mpc/node/px4_controller.hpp>
+#include <drone_mpc_pkg/node/px4_controller.hpp>
 
 /* -- main function -- */
 int main(int argc, char **argv)
@@ -34,13 +34,13 @@ int main(int argc, char **argv)
 
     /*Subscribers*/
     ros::Subscriber state_sub = nh_node.subscribe<mavros_msgs::State>("/mavros/state", 10, mavros_state_cb);
-    ros::Subscriber user_command_sub = nh_node.subscribe<itm_nonlinear_mpc::SetMission>("itm_quadrotor_control/user_command", 10, user_command_callback);
+    ros::Subscriber user_command_sub = nh_node.subscribe<drone_mpc_pkg::SetMission>("itm_quadrotor_control/user_command", 10, user_command_callback);
     ros::Subscriber uav_state_sub = nh_node.subscribe<nav_msgs::Odometry>("/robot_pose", 10, current_odom_callback);
     /*ServiceClient*/
     ros::ServiceClient arming_client = nh_node.serviceClient<mavros_msgs::CommandBool>("/mavros/cmd/arming");
     ros::ServiceClient set_mode_client = nh_node.serviceClient<mavros_msgs::SetMode>("/mavros/set_mode");
-    ros::ServiceClient set_mission_mode = nh_node.serviceClient<itm_nonlinear_mpc::SetMode>("/itm_quadrotor_control/setmode");
-    ros::ServiceClient get_controller_state = nh_node.serviceClient<itm_nonlinear_mpc::GetControllerState>("/itm_quadrotor_control/get_controller_state");
+    ros::ServiceClient set_mission_mode = nh_node.serviceClient<drone_mpc_pkg::SetMode>("/itm_quadrotor_control/setmode");
+    ros::ServiceClient get_controller_state = nh_node.serviceClient<drone_mpc_pkg::GetControllerState>("/itm_quadrotor_control/get_controller_state");
     /*Publisher*/
     robot_command = nh_node.advertise<geometry_msgs::PoseStamped>("/mavros/setpoint_position/local", 10);
 

@@ -2,7 +2,7 @@
  * @Author: Wei Luo
  * @Date: 2021-04-04 00:13:31
  * @LastEditors: Wei Luo
- * @LastEditTime: 2021-04-07 17:45:15
+ * @LastEditTime: 2021-04-08 23:37:07
  * @Note: Note
  */
 #ifndef _MPC_ACADOS_HPP_
@@ -10,8 +10,8 @@
 
 // ros
 #include <geometry_msgs/PoseStamped.h>
-#include <itm_nonlinear_mpc/GetControllerState.h>
-#include <itm_nonlinear_mpc/itm_trajectory_msg.h>
+#include <drone_mpc_pkg/GetControllerState.h>
+#include <drone_mpc_pkg/itm_trajectory_msg.h>
 #include <mavros_msgs/AttitudeTarget.h>
 #include <nav_msgs/Odometry.h>
 #include <ros/ros.h>
@@ -61,7 +61,7 @@ namespace acados_quadrotor
         double takeoff_height_;
         /* mutex */
         boost::shared_mutex mutexTrajectoryCallback_;
-        std::shared_ptr<itm_nonlinear_mpc::itm_trajectory_msg> trajectory_ref_point_;
+        std::shared_ptr<drone_mpc_pkg::itm_trajectory_msg> trajectory_ref_point_;
         /* ACADOS */
         nlp_solver_capsule *acados_ocp_capsule;
         int acados_status;
@@ -79,8 +79,8 @@ namespace acados_quadrotor
 
         /* callback functions */
         void robot_pose_callback(const geometry_msgs::PoseStamped::ConstPtr &msg);
-        void trajectory_callback(const itm_nonlinear_mpc::itm_trajectory_msg::ConstPtr &msg);
-        bool controller_server_response_callback(itm_nonlinear_mpc::GetControllerState::Request &req, itm_nonlinear_mpc::GetControllerState::Response &res);
+        void trajectory_callback(const drone_mpc_pkg::itm_trajectory_msg::ConstPtr &msg);
+        bool controller_server_response_callback(drone_mpc_pkg::GetControllerState::Request &req, drone_mpc_pkg::GetControllerState::Response &res);
         void current_odom_callback(const nav_msgs::Odometry::ConstPtr &msg);
         /* math functions */
         void rpy_to_quaternion(Eigen::Vector3d rpy, Eigen::Quaterniond &q);

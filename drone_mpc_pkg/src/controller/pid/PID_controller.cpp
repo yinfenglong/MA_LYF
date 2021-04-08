@@ -2,11 +2,11 @@
  * @Author: Wei Luo
  * @Date: 2021-03-21 21:07:20
  * @LastEditors: Wei Luo
- * @LastEditTime: 2021-04-08 07:53:41
+ * @LastEditTime: 2021-04-08 23:35:19
  * @Note: Basic PID controller
  */
 
-#include <itm_nonlinear_mpc/controller/pid/PID_controller.hpp>
+#include <drone_mpc_pkg/controller/pid/PID_controller.hpp>
 
 PIDController::PIDController(const ros::NodeHandle &nh, const ros::NodeHandle &private_nh) : nh_(nh),
                                                                                              private_nh_(private_nh),
@@ -16,7 +16,7 @@ PIDController::PIDController(const ros::NodeHandle &nh, const ros::NodeHandle &p
     /* subscribe topics */
     // robot_pose_sub_ = nh_.subscribe<geometry_msgs::PoseStamped>("/robot_pose", 10, &PIDController::robot_pose_callback, this);
     robot_pose_sub_ = nh_.subscribe<nav_msgs::Odometry>("/robot_pose", 10, &PIDController::current_odom_callback, this);
-    trajectory_sub_ = nh_.subscribe<itm_nonlinear_mpc::itm_trajectory_msg>("/robot_trajectory", 10, &PIDController::trajectory_callback, this);
+    trajectory_sub_ = nh_.subscribe<drone_mpc_pkg::itm_trajectory_msg>("/robot_trajectory", 10, &PIDController::trajectory_callback, this);
     /* server */
     controller_server_ = nh_.advertiseService("/itm_quadrotor_control/get_controller_state", &PIDController::controller_server_response_callback, this);
     /* client */
@@ -88,13 +88,13 @@ void PIDController::robot_pose_callback(const geometry_msgs::PoseStamped::ConstP
     }
 }
 
-void PIDController::trajectory_callback(const itm_nonlinear_mpc::itm_trajectory_msg::ConstPtr &msg)
+void PIDController::trajectory_callback(const drone_mpc_pkg::itm_trajectory_msg::ConstPtr &msg)
 {
     if (!is_trajectory_provided_)
         is_trajectory_provided_ = true;
     {
         boost::unique_lock<boost::shared_mutex> lockImageCallback(mutexTrajectoryCallback_);
-        trajectory_ref_point_ = std::make_shared<itm_nonlinear_mpc::itm_trajectory_msg>(*msg);
+        trajectory_ref_point_ = std::make_shared<drone_mpc_pkg::itm_trajectory_msg>(*msg);
     }
 }
 
@@ -114,8 +114,8 @@ void PIDController::current_odom_callback(const nav_msgs::Odometry::ConstPtr &ms
     }
 }
 
-bool PIDController::controller_server_response_callback(itm_nonlinear_mpc::GetControllerState::Request &req,
-                                                        itm_nonlinear_mpc::GetControllerState::Response &res)
+bool PIDController::controller_server_response_callback(drone_mpc_pkg::GetControllerState::Request &req,
+                                                        drone_mpc_pkg::GetControllerState::Response &res)
 {
     command_id = req.command_id;
     // robot_name_ = req.robot_name;
