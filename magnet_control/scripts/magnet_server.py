@@ -17,6 +17,8 @@ def magnet_thread():
             GPIO.output(P_magnet, GPIO.HIGH)
         else:
             GPIO.output(P_magnet, GPIO.LOW)
+            time.sleep(0.1)
+            GPIO.cleanup()
             
         time.sleep(1)           
 
