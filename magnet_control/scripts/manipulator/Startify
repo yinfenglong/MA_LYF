@@ -1,0 +1,28 @@
+
+            __                __                
+    __   __/_/___ ___  ____  / /_  _______      
+    \ \ / / / __ `__ \/ __ \/ / / / / ___/      
+     \ V / / / / / / / /_/ / / /_/ (__  )       
+      \_/_/_/ /_/ /_/ ,___/_/\____/____/        
+                   /_/                          
+                                                
+    Keep It Simple, Stupid.                     
+
+   [e]  <empty buffer>
+
+   MRU
+
+   [0]   ~/ma_ws/src/MA_LYF/manipulator/pi_servo.py
+   [1]   /etc/hosts
+   [2]   ~/ma_ws/ros.sh
+   [3]   ~/ma_ws/src/MA_LYF/drone_mpc_pkg/package.xml
+   [4]   ~/.zshrc
+   [5]   ~/.bashrc
+   [6]   ~/some/devel/setup.bash
+   [7]   ~/test
+
+   MRU /home/achilles/ma_ws/src/MA_LYF/manipulator
+
+   [8]   pi_servo.py
+
+   [q]  <quit>
